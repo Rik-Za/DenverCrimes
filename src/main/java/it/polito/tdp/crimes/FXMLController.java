@@ -5,8 +5,12 @@
 package it.polito.tdp.crimes;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
 
+import it.polito.tdp.crimes.model.Adiacenza;
+import it.polito.tdp.crimes.model.Event;
 import it.polito.tdp.crimes.model.Model;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -25,16 +29,16 @@ public class FXMLController {
     private URL location;
 
     @FXML // fx:id="boxCategoria"
-    private ComboBox<?> boxCategoria; // Value injected by FXMLLoader
+    private ComboBox<String> boxCategoria; // Value injected by FXMLLoader
 
     @FXML // fx:id="boxMese"
-    private ComboBox<?> boxMese; // Value injected by FXMLLoader
+    private ComboBox<Integer> boxMese; // Value injected by FXMLLoader
 
     @FXML // fx:id="btnAnalisi"
     private Button btnAnalisi; // Value injected by FXMLLoader
 
     @FXML // fx:id="boxArco"
-    private ComboBox<?> boxArco; // Value injected by FXMLLoader
+    private ComboBox<Adiacenza> boxArco; // Value injected by FXMLLoader
 
     @FXML // fx:id="btnPercorso"
     private Button btnPercorso; // Value injected by FXMLLoader
@@ -44,11 +48,31 @@ public class FXMLController {
 
     @FXML
     void doCalcolaPercorso(ActionEvent event) {
+    	txtResult.clear();
+    	if(boxArco.getValue()==null) {
+    		txtResult.appendText("Seleziona arco, e se non ancora fatto, crea il grafo.");
+    		return;
+    	}
+    	txtResult.clear();
+    	Adiacenza a = boxArco.getValue();
+    	List<String> percorso = this.model.calcolaPercorso(a.getV1(), a.getV2());
+    	txtResult.appendText("Il percorso che tocca più vertici ("+percorso.size()+") è il seguente");
+    	for(String s: percorso)
+    		txtResult.appendText(s);
+    	
 
     }
 
     @FXML
     void doCreaGrafo(ActionEvent event) {
+    	txtResult.clear();
+    	String categoria = boxCategoria.getValue();
+    	int mese = boxMese.getValue();
+    	List<Adiacenza> archi = this.model.creaGrafo(categoria, mese);
+    	List<Adiacenza> risultato = new ArrayList<Adiacenza>(this.model.getRisultato());
+    	boxArco.getItems().addAll(archi);
+    	for(Adiacenza a:risultato)
+    		txtResult.appendText(a.toString()+"\n");
 
     }
 
@@ -65,5 +89,9 @@ public class FXMLController {
     
     public void setModel(Model model) {
     	this.model = model;
+    	for(int i=1;i<=12;i++)
+    		boxMese.getItems().add(i);
+    	for(Event e: this.model.getEventi())
+    		boxCategoria.getItems().add(e.getOffense_category_id());
     }
 }
